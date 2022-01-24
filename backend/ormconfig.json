@@ -1,0 +1,12 @@
+{
+    "type": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "username": "admin",
+    "password": "admin",
+    "database": "groupomania",
+    "synchronize": true,
+    "entities":[
+        "src/entity/*.js"
+    ]
+}
