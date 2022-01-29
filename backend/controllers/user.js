@@ -28,11 +28,12 @@ exports.loginUser = (req,res,next) =>{
         bcrypt.compare(req.body.password,user.password)
         .then(valid =>{
             if(!valid){
-                return res.status(401).json({error:'Mot de passe incorrect'});
+                return res.status(401).json({error:'Identifiant incorrects'});
             }
             
             let jwt_token = jwt.sign({
                     userId : user.id,
+                    isModerator : user.isModerator,
                     lastConnection : new Date().getTime()
                 },
                 'MON_TOKEN_SECRET',
@@ -54,7 +55,7 @@ exports.loginUser = (req,res,next) =>{
         })
         .catch(error => next(error));
     })
-    .catch(()=>res.status(404).json({error:'Aucun utilisateur pour cet email'}));
+    .catch(()=>res.status(404).json({error:'Identifiants incorrects'}));
 }
 
 exports.modifyUser = (req,res,next)=>{

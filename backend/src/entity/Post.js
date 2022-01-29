@@ -17,14 +17,15 @@ module.exports = new EntitySchema({
             type: "text"
         },
         lastUpdate: {
-            type: "timestamp"
+            type: "varchar",
+            length:"20"
         },
         like: {
             type: "json"
-        }
+        },
     },
     relations:{
-        author:{
+        authorId:{
             target:"User",
             type:"many-to-one",
             joinTable:true,
