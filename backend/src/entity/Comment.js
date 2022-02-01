@@ -14,7 +14,8 @@ module.exports = new EntitySchema({
             type:"varchar"
         },
         lastUpdate:{
-            type:"varchar"
+            type:"varchar",
+            length:"20"
         },
         like:{
             type:"json"
@@ -33,11 +34,19 @@ module.exports = new EntitySchema({
             joinTable: true,
             cascade: true
         },
+        commentReplying:{
+            type:"one-to-many",
+            target: "Comment",
+            inverseSide:'replyToComment'
+        },
         replyToComment:{
             target: "Comment",
             type: "many-to-one",
-            joinTable: true,
-            cascade: true
+            joinColumn:{
+                name:"comment_id"
+            },
+            cascade:true,
+            inverseSide:'commentReplying'
         }
     }
 })
