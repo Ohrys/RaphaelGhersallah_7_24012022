@@ -57,3 +57,28 @@ exports.createComment = (req, res, next) => {
             .then(() => res.status(201).json({ message: 'Comment Enregistré' }))
             .catch(error => res.status(400).json({ error }));
 }
+
+exports.modifyComment = (req, res, next) => {
+    if (req.auth.isModerator || req.auth.authorId == req.body.authorId) {
+        delete req.body.authorId;
+        let commentObject = {
+            ...req.body,
+            lastUpdate: new Date().getTime()
+        };
+        getManager().update(Comment, { id: req.params.idComment }, { ...commentObject })
+            .then(() => res.status(200).json({ message: "Comment Modifié !" }))
+            .catch(error => next(error));
+    } else {
+        return res.status(401).json({ message: "vous n'êtes pas l'auteur de ce commentaire." });
+    }
+}
+
+exports.deleteComment = (req, res, next) => {
+    if (req.auth.isModerator || req.auth.authorId == req.body.authorId) {
+        getManager().delete(Comment, { id: req.params.idComment })
+            .then(() => res.status(200).json({ message: "Comment supprimé avec succès." }))
+            .catch(error => res.status(500).json({ error: "une erreur est survenue " }));
+    } else {
+        return res.status(401).json({ message: "vous n'êtes pas l'auteur de ce commentaire." });
+    }
+}

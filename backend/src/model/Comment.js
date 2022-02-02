@@ -13,22 +13,3 @@ class Comment {
 module.exports = {
     Comment: Comment
 };
-
-/*
-"INSERT INTO `comment`(
-    `id`,
-     `content`,
-      `lastUpdate`,
-       `like`,
-        `authorId`,
-         `replyToPostId`,
-          `replyToCommentId`)
-        VALUES 
-    (DEFAULT,
-         'ceci est une réponse. de l\\'auteur 2',
-          1643669221005,
-           '0',
-            2,
-             2,
-            NULL)"
-        */

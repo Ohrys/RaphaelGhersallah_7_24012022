@@ -26,13 +26,13 @@ module.exports = new EntitySchema({
             target: "User",
             type: "many-to-one",
             joinTable: true,
-            cascade: true
+            onDelete: "cascade"
         },
         replyToPost:{
             target:"Post",
             type:"many-to-one",
             joinTable: true,
-            cascade: true
+            onDelete: "cascade"
         },
         commentReplying:{
             type:"one-to-many",
@@ -45,7 +45,7 @@ module.exports = new EntitySchema({
             joinColumn:{
                 name:"comment_id"
             },
-            cascade:true,
+            onDelete:"cascade",
             inverseSide:'commentReplying'
         }
     }
