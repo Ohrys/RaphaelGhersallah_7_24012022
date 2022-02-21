@@ -2,9 +2,10 @@ import {createConnection} from "typeorm";
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import {Request, Response} from "express";
+import * as path from "path";
+import * as fs from "fs";
 
 const app = express();
-/* const path = require('path'); */
 
 createConnection()
     .then(() => console.log('Connecté à la base MySQL !'))
@@ -18,6 +19,12 @@ app.use((req:Request, res: Response, next:Function) => {
 });
 
 app.use(bodyParser.json());
+
+var dir = './images';
+if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+}
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 const userRoutes = require('./routes/user');
 const publicationRoutes = require('./routes/publication');

@@ -10,6 +10,9 @@ export class User {
     name: string;
 
     @Column({default:null})
+    urlAvatar: string;
+    
+    @Column({default:null})
     password: string;
 
     @Column({default:null})

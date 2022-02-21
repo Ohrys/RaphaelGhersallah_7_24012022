@@ -1,5 +1,4 @@
 import * as express from "express";
-import * as PublicationController from "../controller/PublicationController";
 import * as ReplyController from "../controller/ReplyController";
 import auth from "../middleware/auth";
 const router = express.Router();
@@ -10,5 +9,4 @@ router.post('/:idReply', auth, ReplyController.createReply ); //utilise l'id du 
 router.get('/:idReply', auth, ReplyController.getOneReply ); 
 router.put('/:idReply', auth, ReplyController.modifyReply );
 router.delete('/:idReply', auth, ReplyController.deleteReply );
-
 module.exports = router;

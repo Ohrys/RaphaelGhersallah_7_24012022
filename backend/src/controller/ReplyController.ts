@@ -1,26 +1,40 @@
 import { getRepository } from "typeorm";
-import { NextFunction, Request, Response } from "express";
 import { Reply } from "../entity/Reply";
 import { Publication } from "../entity/Publication";
 
+
+/** retourne un tableau contenant tout les commentaire d'une publication.
+ * @param {String} uuid uuid de la publication issu du body de la request
+ * @returns {Reply[]} Un tableau de Reply au format json
+ */
 export function getAllReply(req, res, next) {
     getRepository(Publication).findOne(req.body.idPublication, { relations: ['replies'] })
-        .then(post =>{
-            if(post && post.replies){
-                res.status(200).json(post.replies)
+        .then(publication =>{
+            if(publication && publication.replies){
+                res.status(200).json(publication.replies)
             }else{
-                res.status(404).json({message : "aucun commentaire associé : " + post});
+                res.status(404).json({message : "aucun commentaire associé : " + publication});
             }
         })
-    .catch(error => res.status(412).json({ message: "identifiant invalide " + error }));
+    .catch(error => res.status(412).json({ message: "Erreur Obtention Reply[] (publi) : " + error }));
 }
 
+
+/** Retourne une Reply et ses Reply
+ * @param {String} uuid uuid d'une Reply passé en paramètre url
+ * @return {Reply[]} un tableau de Reply au format json
+ */
 export function getOneReply(req, res, next){
     getRepository(Reply).findOne(req.params.id, {relations:['replies']})
         .then((replies)=>res.status(200).json(replies))
-    .catch((error)=>res.status(404).json({message: 'Aucun replies trouvés : '+ error}))
+    .catch((error)=>res.status(404).json({message: 'Erreur Obtention Reply[] (reply) : '+ error}))
 }
 
+/** Crée une Reply à une Publication ou une Reply. 
+ * @param {String} uuid un uuid soit dans les params d'une url (réponse à une Reply) soit dans le body (réponse à une Publication)
+ * @param {String} content le contenu d'une reply
+ * @return {String} un message au format json
+ */
 export function createReply(req, res, next) {
     let reply = new Reply();
     reply = {
@@ -37,9 +51,14 @@ export function createReply(req, res, next) {
     }
     getRepository(Reply).save(reply)
         .then(()=> res.status(201).json({message:"Enregistrement Reply effectué"}) )
-    .catch(error => res.status(500).json({ message: 'Problème enregistrement Reply : ' + error }));
+    .catch(error => res.status(500).json({ message: 'Erreur enregistrement Reply : ' + error }));
 }
 
+
+/** Modifie la Reply passé par paramètre
+ * @param {String} uuid uuid d'une Reply passé par params url 
+ * @return {String} un message au format json
+ */
 export function modifyReply(req, res, next) {
     getRepository(Reply).findOne(req.params.id)
         .then(reply =>{
@@ -51,7 +70,7 @@ export function modifyReply(req, res, next) {
                 };
                 getRepository(Reply).update(reply, { ...replyObj })
                     .then(() => res.status(200).json({message: "Reply Modifié !" }))
-                .catch(error => res.status(500).json({message: 'Une erreur est survenue : '+ error}));
+                .catch(error => res.status(500).json({message: 'Erreur modification Reply : '+ error}));
             } else {
                 return res.status(401).json({message: "vous n'êtes pas l'auteur de ce commentaire." });
             }
@@ -60,13 +79,17 @@ export function modifyReply(req, res, next) {
     
 }
 
+/** Supprime une Reply passé en paramètre
+ * @param {String} uuid uuid d'une Reply passé par params url
+ * @return {String} un message au format json
+ */
 export function deleteReply(req, res, next) {
     getRepository(Reply).findOne(req.params.id)
         .then(reply => {
             if (req.auth.isModerator || req.auth.idUser == reply.author.idUser) {
                 getRepository(Reply).delete(reply)
                     .then(() => res.status(200).json({message: "Post supprimé avec succès." }))
-                    .catch(error => res.status(500).json({message: "une erreur est survenue "+error }));
+                    .catch(error => res.status(500).json({message: "Erreur suppression Reply : "+error }));
             } else {
                 return res.status(401).json({message: "vous n'êtes pas l'auteur de ce post." });
             }
