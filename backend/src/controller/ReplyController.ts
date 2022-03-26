@@ -4,16 +4,23 @@ import { Publication } from "../entity/Publication";
 
 
 /** retourne un tableau contenant tout les commentaire d'une publication.
- * @param {String} uuid uuid de la publication issu du body de la request
+ * @param {String} uuid uuid de la publication passé en paramètre de la request
  * @returns {Reply[]} Un tableau de Reply au format json
  */
 export function getAllReply(req, res, next) {
-    getRepository(Publication).findOne(req.body.idPublication, { relations: ['replies'] })
-        .then(publication =>{
-            if(publication && publication.replies){
-                res.status(200).json(publication.replies)
+    getRepository(Reply).find({
+        where: { 
+            replyToP: req.params.idPublication 
+        }, 
+        order: {
+            creationDate: "DESC"
+        },
+        relations: ['author'] })
+        .then(replies =>{
+            if(replies){
+                res.status(200).json(replies)
             }else{
-                res.status(404).json({message : "aucun commentaire associé : " + publication});
+                res.status(404).json({message : "aucun commentaire associé : " + replies});
             }
         })
     .catch(error => res.status(412).json({ message: "Erreur Obtention Reply[] (publi) : " + error }));
@@ -25,8 +32,8 @@ export function getAllReply(req, res, next) {
  * @return {Reply[]} un tableau de Reply au format json
  */
 export function getOneReply(req, res, next){
-    getRepository(Reply).findOne(req.params.id, {relations:['replies']})
-        .then((replies)=>res.status(200).json(replies))
+    getRepository(Reply).findOne(req.params.id, {relations:['author','replies']})
+        .then((reply)=>res.status(200).json(reply))
     .catch((error)=>res.status(404).json({message: 'Erreur Obtention Reply[] (reply) : '+ error}))
 }
 
@@ -55,7 +62,7 @@ export function createReply(req, res, next) {
 }
 
 
-/** Modifie la Reply passé par paramètre
+/** Modifie la Reply passé par paramètre - Non utilisé
  * @param {String} uuid uuid d'une Reply passé par params url 
  * @return {String} un message au format json
  */
@@ -84,10 +91,10 @@ export function modifyReply(req, res, next) {
  * @return {String} un message au format json
  */
 export function deleteReply(req, res, next) {
-    getRepository(Reply).findOne(req.params.id)
+    getRepository(Reply).findOne(req.params.idReply,{relations:['author']})
         .then(reply => {
             if (req.auth.isModerator || req.auth.idUser == reply.author.idUser) {
-                getRepository(Reply).delete(reply)
+                getRepository(Reply).delete({idReply:req.params.idReply})
                     .then(() => res.status(200).json({message: "Post supprimé avec succès." }))
                     .catch(error => res.status(500).json({message: "Erreur suppression Reply : "+error }));
             } else {

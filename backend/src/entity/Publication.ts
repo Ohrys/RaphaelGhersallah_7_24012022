@@ -13,6 +13,9 @@ export class Publication{
     @Column()
     content:string;
 
+    @Column({default:null})
+    illustration:string;
+
     @ManyToOne(() => User, user => user.idUser)
     @JoinColumn({ name: 'author' })
     author: User;

@@ -1,9 +1,8 @@
 const jwt = require('jsonwebtoken');
-const Cookies = require('cookies');
 
 export default (req, res, next) => {
     try {
-        const token = Cookies(req, res).get('access_token');
+        const token = req.headers.authorization.split(' ')[1];
         const decodedToken = jwt.verify(token, 'MON_TOKEN_SECRET');
         const idUser = decodedToken.idUser;
         const isModerator = decodedToken.isModerator;
@@ -16,7 +15,7 @@ export default (req, res, next) => {
     } catch {
         
          res.status(401).json({
-            error: new Error('Invalid request!').message
+             error: new Error('Invalid request!' + ' ' + req.headers.authorization.split(' ')[1]).message
         });
     }
 };

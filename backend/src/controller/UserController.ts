@@ -5,22 +5,27 @@ import {User} from "../entity/User";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import * as Cookies from "cookies";
+const fs = require('fs');
 
-/** Non utilisée - récupère la liste de tout les utilisateur
- * @param void
- * @returns {User[]} un tableau d'utilisateur au format json
+/** Récupère l'utilisateur via le cookie par mesure de sécurité
+ * @param {void} none - les requêtes étant sécurisées par cookie,
+ *                      on se sert de l'id contenu dans le cookie pour renvoyer l'utilisateur connecté.
+ * @return {User} un utilisateur
  */
-export function getAll(request: Request, response: Response, next: NextFunction){
-    getRepository(User).find()
-     .then((result)=>response.status(200).json(result))
-     .catch((error)=>response.status(400).json({message: "erreur obtention User[] : "+ error}));
+export function getLoggedUser(req, res){
+    if(req.auth.idUser){
+        getRepository(User).findOne(req.auth.idUser)
+         .then((result)=>res.status(200).json(result))
+         .catch((error)=>res.status(404).json({message:"erreur obtention User logged : "+error}));
+    }else{
+        return res.status(401).json({ message: "erreur obtention User logged " })
+    }
 }
-
 /** Non utilisée - récupère l'utilisateur passé par params url
  * @param {String} uuid utilistateur passé dans les params url
  * @return {User} un utilisateur
  */
-export function getOne(request: Request, response: Response, next: NextFunction) {
+export function getOne(request: Request, response: Response) {
     getRepository(User).findOne(request.params.id)
      .then((result)=>response.status(200).json(result))
      .catch((error)=>response.status(404).json({message : "erreur obtention User : "+error}));
@@ -39,8 +44,8 @@ export function registerUser(req:Request, res:Response, next:Function){
         user.email = req.body.email;
          user.lastConnection = new Date().getTime().toString();
         getRepository(User).save(user)
-         .then(()=>res.status(201).json({message : "User enregistré"}))
-         .catch((error)=>res.status(500).json({message : "erreur dans l'enregistrement User : "+error}));
+         .then(()=>res.status(201).json({message : "User enregistré",status:1}))
+         .catch((error)=>res.status(500).json({message : "erreur dans l'enregistrement User : "+error, status:-1}));
      })
      .catch((error) => next(error));
 }
@@ -60,25 +65,22 @@ export function loginUser(req:Request, res:Response, next:Function){
                     }
                     user.lastConnection = new Date().getTime().toString();
                     getRepository(User).save(user)
-                    .catch(error => res.status(400).json({message : "Erreur màj lastConnection : " + error}));
+                        .catch(error => res.status(400).json({ message: "Erreur màj lastConnection : " + error, status: -1}));
 
-                    let jwt_token = jwt.sign({
-                        idUser: user.idUser,
-                        isModerator: user.isModerator,
-                        lastConnection: new Date().getTime()
-                    },
+                        let jwt_token = jwt.sign({
+                            idUser: user.idUser,
+                            isModerator: user.isModerator,
+                            lastConnection: new Date().getTime()
+                        },
                         'MON_TOKEN_SECRET' // -- DEV : à modifier avec un dotenv
-                    );
+                        );
 
-                    Cookies(req, res).set('access_token', jwt_token, {
-                        httpOnly: true,
-                        maxAge: 3600000*24
-                    });
-                    res.status(200).json(user);
+                    delete user.password, user.isModerator;
+                    res.status(200).json({user,jwt_token,status:1});
                 })
-                .catch(error => res.status(400).json({message : "Erreur encryptage password : "+ error}));
+                .catch(error => res.status(400).json({message : "Erreur encryptage password : "+ error,status:-1}));
         })
-        .catch(error => res.status(404).json({ message: 'Identifiants incorrects : ' + error }));
+        .catch(error => res.status(404).json({ message: 'Identifiants incorrects : ' + error, status: -1}));
 }
 
 /** Modifie un utilisateur
@@ -87,48 +89,37 @@ export function loginUser(req:Request, res:Response, next:Function){
  * @return {String} un message au format json
  */
 export function modifyUser(req, res, next) {
-
     if(req.file){ // s'il y a une image on traite la requête différemment. 
         getRepository(User).findOne(req.params.id)
             .then(user =>{
                 if (req.auth.isModerator || req.auth.idUser == user.idUser) {
                     getRepository(User).update(user,{
-                        ...JSON.parse(req.body.user),
+                        name :req.body.name,
+                        email: req.body.email,
                         urlAvatar: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`})
-                        .then(()=>res.status(202).json({message:"l'utilisateur a été modifié avec succès"}))
-                    .catch(error => res.status(401).json("Erreur de modification User : "+error));
+                        .then(()=>res.status(202).json({user,message:"l'utilisateur a été modifié avec succès",status:1}))
+                    .catch(error => res.status(401).json({message:"Erreur de modification User : "+error,status:-1}));
                 }else{
-                    return res.status(412).json({message:"Vous n'êtes pas le possesseur de ce compte"});
+                    return res.status(412).json({ message: "Vous n'êtes pas le possesseur de ce compte", status: -1});
                 }
             })
-        .catch(error => res.status(404).json({message:"une erreur est survenue : "+ error}))
+        .catch(error => res.status(404).json({message:"une erreur est survenue : "+ error,status:-1}))
     }else{
         // il n'y en a pas les données sont accessible via req.body
-        if (req.body.idUser == req.params.id || req.auth.isModerator) {
-            getRepository(User).findOne(req.body.userId)
-                .then((user) => {
-                    delete req.body.userId;
-                    user = { ...req.body };
-                    if (req.body.password) {
-                        bcrypt.hash(req.body.password, 10)
-                            .then(hash => {
-                                user.password = hash;
-                                getRepository(User).save(user)
-                                    .then(() => res.status(202).json({ message: "Utilisateur modifié" }))
-                                    .catch((error) => res.status(400).json({message : "Erreur modification (w/ password) User : "+ error}));
-                            })
-                            .catch(error => res.status(500).json({ message: 'erreur lors du hashage : '+ error }));
-
-                    } else {
-                        getRepository(User).save(user)
-                            .then(() => res.status(202).json({ message: "Utilisateur modifié" }))
-                            .catch((error) => res.status(400).json({message : "Erreur modification User : "+error}));
-                    }
-                })
-                .catch((error) => res.status(404).json({message:"Erreur obtention User : "+ error}));
-        } else {
-            return res.status(401).json({ message: "vous n'êtes pas l'utilisateur de la requête." });
-        }
+        getRepository(User).findOne(req.params.id)
+            .then((user) => {
+                if (req.auth.isModerator || req.auth.idUser == req.params.id) {
+                    getRepository(User).update(user, {
+                        name:req.body.name,
+                        email:req.body.email
+                    })
+                        .then(() => res.status(202).json({user, message: "Utilisateur modifié", status:1 }))
+                    .catch((error) => res.status(400).json({message : "Erreur modification User : "+ error, status:-1}));
+                } else {
+                    return res.status(401).json({ message: "vous n'êtes pas l'utilisateur de la requête." , status:-1});
+                }
+            })
+            .catch((error) => res.status(404).json({message:"Erreur obtention User : "+ error, status:-1}));
     }
 }
 
@@ -141,14 +132,17 @@ export function deleteUser(req, res, next){
         getRepository(User).findOne(req.body.idUser)
             .then(user =>{
                 if(user){
-                    getRepository(User).remove(user)
-                        .then(()=>res.status(203).json({message:'Utilisateur supprimé avec succès'}))
+                    const filename = user.urlAvatar.split('/images/')[1];
+                    fs.unlink(`images/${filename}`,()=>{
+                        getRepository(User).remove(user)
+                            .then(()=>res.status(203).json({message:'Utilisateur supprimé avec succès',status:1}))
+                    })
                 }else{
-                    return res.status(500).json({message:'une erreur est survenue'})
+                    return res.status(500).json({ message: 'une erreur est survenue', status: -1})
                 }
             })
-            .catch(error => res.status(404).json({ message: "Erreur obtention User : "+error }))
+            .catch(error => res.status(404).json({ message: "Erreur obtention User : " + error, status: -1 }))
     } else {
-        return res.status(401).json({ message: "vous n'êtes pas l'utilisateur de la requête." });
+        return res.status(401).json({ message: "vous n'êtes pas l'utilisateur de la requête.", status: -1 });
     }
 }
