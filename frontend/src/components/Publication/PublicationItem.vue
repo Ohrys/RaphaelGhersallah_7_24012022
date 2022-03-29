@@ -2,7 +2,7 @@
   <div class="publication">
     <div class="publication__header">
       <div class="profil__container-avatar">
-                    <img v-if="user.urlAvatar != null" :src="author.urlAvatar" class="avatarAuthor" alt="avatar de l'utilisateur" /> 
+                    <img v-if="author.urlAvatar != null" :src="author.urlAvatar" class="avatarAuthor" alt="avatar de l'utilisateur" /> 
                     <img v-else src="@/assets/svg/logo.svg" class="avatarAuthor" alt="avatar de l'utilisateur" /> 
                 </div>
       <div>
