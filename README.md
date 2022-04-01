@@ -5,17 +5,18 @@ Vous retrouverez plus bas les diverses manipulations pour exécuter le projet et
 
 ## Comment lancer le projet : 
 1. Cloner le repo
-2. Lancez la commande `npm run init` à la racine du projet. 
-3. Lancez la commande `npm run start` à la racine du projet. 
-2. sur [MySQL](https://dev.mysql.com/downloads/workbench/) importez via l'option 'Import from Self-Contained File' le fichier **[groupomania.sql](https://drive.google.com/file/d/1THdBHGxbsuf8kWqyXXfhpZxCJlmrcaPm/view?usp=sharing)**
-3. Inscrivez-vous ou connectez-vous avec les deux comptes suivants : 
+2. S'assurer que la version de node est au moins supérieure à la v14 avec `node -v`
+3. Lancez la commande `npm run init` à la racine du projet. 
+4. Lancez la commande `npm run start` à la racine du projet. 
+5. sur [MySQL](https://dev.mysql.com/downloads/workbench/) importez via l'option 'Import from Self-Contained File' le fichier **[groupomania.sql](https://ufile.io/7wl32ejy)**
+6. Inscrivez-vous ou connectez-vous avec les deux comptes suivants : 
 
 | Adresse mail           | Mot de Passe | 
 |------------------------|--------------|
 | support@groupomania.fr | Admin1-      | 
 | test@groupomania.fr    | Test1-       | 
 
-4. Testez les différentes fonctionnalités mises en places. 
+7. Testez les différentes fonctionnalités mises en places. 
 
 ## Cahier des charges du projet : 
 - Présentation simple des fonctionnalités

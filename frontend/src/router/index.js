@@ -5,6 +5,7 @@ import Erreur from '../views/Error.vue'
 import Login from '../views/Login.vue'
 import Profil from '../views/Profil.vue'
 import Publication from '../views/Publication.vue'
+import EditPublication from '../views/EditPublication.vue'
 
 const routes = [
   {
@@ -32,6 +33,11 @@ const routes = [
     path:'/publication/:idPublication',
     name:'Publication',
     component: Publication
+  },
+  {
+    path:'/publication/:idPublication/edit',
+    name:'EditPublication',
+    component: EditPublication
   },
   {
     path: '/:catchAll(.*)*',

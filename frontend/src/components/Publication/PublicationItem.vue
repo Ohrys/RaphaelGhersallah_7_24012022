@@ -19,7 +19,8 @@
     <div class="publication__footer">
       <router-link class="button" :to="{name: 'Publication', params: { idPublication: this.publication.idPublication }}" title="voir les commentaires">💬 {{nbr_commentaire}}</router-link> 
       <div class="moderator" v-if="author.idUser==this.user.idUser || this.user.isModerator">
-        <button @click="deletePublication">Supprimer</button>
+        <button class="button" @click="deletePublication">Supprimer</button>
+        <router-link class="button" :to="{name:'EditPublication', params:{ idPublication: this.publication.idPublication }}" title="modifier la publication">Modifier</router-link>
       </div>
     </div>
   </div>
@@ -153,12 +154,14 @@ export default {
       padding:5px;
       
       .moderator{
+        width:20%;
         margin-left:25px;
         display:flex;
-        flex-direction: column;
-        align-items: flex-end;
+        flex-direction: row;
+
+        justify-content: space-evenly;
       }
-      .button, button{
+      .button{
         display:block;
         box-sizing: content-box;
         height:1.5rem;
@@ -170,8 +173,10 @@ export default {
         background-color:$action-color;
         color:$text-color;
         font-size:1rem;
+        font-family:Arial;
+        text-align: center;
+        line-height: 1.5rem;
         text-decoration: none;
-
         &:hover{
             border:1px solid #e0898f;
             background-color: #e0898f; // 25 % lighter

@@ -10,7 +10,7 @@ export class Publication{
     @Column()
     title:string;
 
-    @Column()
+    @Column("longtext")
     content:string;
 
     @Column({default:null})

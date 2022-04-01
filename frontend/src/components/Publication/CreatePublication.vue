@@ -4,7 +4,7 @@
       <label for="title_publication">Titre : </label>
       <input id="title_publication" name="title_publication" type="text" v-model.trim="title_publication" placeholder="Mon Titre" required/>
       <label for="content_publication">Contenu :</label>
-      <textarea id="content_publication" name="content_publication" v-model.trim="content_publication" placeholder="votre super texte ici" cols="50" rows="5" required></textarea>
+      <textarea id="content_publication" name="content_publication" v-model.trim="content_publication" placeholder="votre super texte ici" cols="50" rows="5" max="250"></textarea>
       <label for="illustration_publication">Attacher une image :</label>
       <input id="illustration_publication" ref="image" name="illustration_publication" type="file" @change="upload">
       <input type="submit" value="Envoyer"/>
@@ -27,12 +27,14 @@ export default {
       this.illustration_publication = this.$refs.image.files[0];
       console.log(this.image);
     },
+    
     async sendPublication(){
       const formData = new FormData();
       formData.append('title',this.title_publication);
       formData.append('content',this.content_publication);
       formData.append('image',this.illustration_publication);
-      const res = await fetch(
+      try {
+        await fetch(
         "http://localhost:3000/api/publication",{
           method:"POST",
           headers:{
@@ -40,12 +42,19 @@ export default {
           },
           body:formData
         }
-      )
-      const data = res.json();
-      if(data.status == 1){
-        this.$router.push('/'); 
-        
-      } 
+      ).then(res => res.json())
+      .then(data => {
+        if(data.status == 1){
+          console.log(data.message)
+          this.$router.push('/'); 
+          
+        } 
+      })
+      .catch(data => console.log(data))
+      .catch(data => console.log(data))  
+    } catch (error) {
+     console.log(error);
+    }
     }
   }
 }

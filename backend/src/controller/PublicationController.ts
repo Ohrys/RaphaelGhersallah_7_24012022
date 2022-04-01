@@ -78,9 +78,38 @@ export function modifyPublication(req, res, next){
     getRepository(Publication).findOne(req.params.id, { relations: ['author'] })
         .then(publication => {
             if (req.auth.isModerator || req.auth.idUser == publication.author.idUser) {
-                getRepository(Publication).update(publication,{...req.body,lastUpdate: new Date().getTime().toString()})
-                    .then(() => res.status(200).json({ message: "Post Modifié avec succès." }))
-                .catch(error => res.status(500).json({ message : "Erreur Modification Publication : "+ error }));
+                if(req.file){
+                    if(publication.illustration){
+                        const filename = publication.illustration.split('/images/')[1];
+                        fs.unlink(`images/${filename}`, () => {
+                            getRepository(Publication).update(publication, {
+                                title: req.body.title,
+                                content: req.body.content,
+                                illustration: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+                                lastUpdate: new Date().getTime().toString()
+                            })
+                                .then(() => res.status(200).json({ message: "Post Modifié avec succès.", status: 1 }))
+                                .catch(error => res.status(500).json({ message: "Erreur Modification Publication : " + error, status: -1 }));
+                        });
+                    }else{
+                        getRepository(Publication).update(publication, {
+                            title: req.body.title,
+                            content: req.body.content,
+                            illustration: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+                            lastUpdate: new Date().getTime().toString()
+                        })
+                            .then(() => res.status(200).json({ message: "Post Modifié avec succès.",status:1 }))
+                            .catch(error => res.status(500).json({ message: "Erreur Modification Publication : " + error,status:-1 }));
+                    }
+                }else{
+                    getRepository(Publication).update(publication,{
+                        title:req.body.title,
+                        content:req.body.content,
+                        lastUpdate: new Date().getTime().toString()
+                    })
+                        .then(() => res.status(200).json({ message: "Post Modifié avec succès.",status:1 }))
+                    .catch(error => res.status(500).json({ message : "Erreur Modification Publication : "+ error,status:-1 }));
+                }
             } else {
                 return res.status(401).json({ message: "vous n'êtes pas l'auteur de ce post." });
             }
@@ -96,12 +125,18 @@ export function deletePublication(req, res, next) {
     getRepository(Publication).findOne(req.params.id,{relations:['author']})
      .then(publication => {
          if (req.auth.isModerator || req.auth.idUser == publication.author.idUser) {
-             const filename = publication.illustration.split('/images/')[1];
-             fs.unlink(`images/${filename}`, () => {
-                getRepository(Publication).delete(req.params.id)
-                    .then(() => res.status(200).json({ message: "Post supprimé avec succès." }))
-                    .catch(error => res.status(500).json({ message: "Erreur Suppression Publication : "+error }));
-             });
+             if(publication.illustration){
+                 const filename = publication.illustration.split('/images/')[1];
+                 fs.unlink(`images/${filename}`, () => {
+                    getRepository(Publication).delete(req.params.id)
+                        .then(() => res.status(200).json({ message: "Post supprimé avec succès." }))
+                        .catch(error => res.status(500).json({ message: "Erreur Suppression Publication : "+error }));
+                 });
+             }else{
+                 getRepository(Publication).delete(req.params.id)
+                     .then(() => res.status(200).json({ message: "Post supprimé avec succès." }))
+                     .catch(error => res.status(500).json({ message: "Erreur Suppression Publication : " + error }));
+             }
          } else {
              return res.status(401).json({ message: "vous n'êtes pas l'auteur de ce post." });
          }
