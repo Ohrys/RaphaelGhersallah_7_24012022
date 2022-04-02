@@ -52,7 +52,7 @@ export default{
             );
             const data = await res.json();
             if(data.status == 1){
-                Cookie.set('user_session',data.jwt_token);
+                Cookie.set('user_session',data.jwt_token, {expires:2});
                 this.setUser();
                 this.$router.push({name:'Home'})
             }

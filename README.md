@@ -8,7 +8,7 @@ Vous retrouverez plus bas les diverses manipulations pour exécuter le projet et
 2. S'assurer que la version de node est au moins supérieure à la v14 avec `node -v`
 3. Lancez la commande `npm run init` à la racine du projet. 
 4. Lancez la commande `npm run start` à la racine du projet. 
-5. sur [MySQL](https://dev.mysql.com/downloads/workbench/) importez via l'option 'Import from Self-Contained File' le fichier **[groupomania.sql](https://ufile.io/7wl32ejy)**
+5. sur [MySQL](https://dev.mysql.com/downloads/workbench/) importez via l'option 'Import from Self-Contained File' le fichier **[groupomania.sql](https://ufile.io/wgdg5mlf)**
 6. Inscrivez-vous ou connectez-vous avec les deux comptes suivants : 
 
 | Adresse mail           | Mot de Passe | 
