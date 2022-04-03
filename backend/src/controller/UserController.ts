@@ -64,16 +64,18 @@ export function loginUser(req:Request, res:Response, next:Function){
                         return res.status(401).json({ message: 'Identifiant incorrects' });
                     }
                     user.lastConnection = new Date().getTime().toString();
+                    console.log(process.env.TOKEN)
                     getRepository(User).save(user)
                         .catch(error => res.status(400).json({ message: "Erreur màj lastConnection : " + error, status: -1}));
-
                         let jwt_token = jwt.sign({
                             idUser: user.idUser,
                             isModerator: user.isModerator,
                             lastConnection: new Date().getTime()
                         },
-                        'MON_TOKEN_SECRET' // -- DEV : à modifier avec un dotenv
-                        );
+                        process.env.TOKEN, 
+                        {expiresIn: 60 * 60 * 48 } // Expiration date : 2days
+                    );
+                    console.log('here');
 
                     delete user.password, user.isModerator;
                     res.status(200).json({user,jwt_token,status:1});

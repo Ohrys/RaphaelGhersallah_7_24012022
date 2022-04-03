@@ -4,6 +4,7 @@ import * as bodyParser from "body-parser";
 import {Request, Response} from "express";
 import * as path from "path";
 import * as fs from "fs";
+require('dotenv').config({ path: __dirname+'/process.env' });
 
 const app = express();
 

@@ -6,7 +6,7 @@
       <label for="content_publication">Contenu :</label>
       <textarea id="content_publication" name="content_publication" v-model.trim="content_publication" placeholder="votre super texte ici" cols="50" rows="5" max="250"></textarea>
       <label for="illustration_publication">Attacher une image :</label>
-      <input id="illustration_publication" ref="image" name="illustration_publication" type="file" @change="upload">
+      <input id="illustration_publication" ref="image" name="illustration_publication" type="file" accept="image/png, image/jpeg, image/jpg" @change="upload">
       <input type="submit" value="Envoyer"/>
     </form>
   </div>
